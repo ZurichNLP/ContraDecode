@@ -1,0 +1,7 @@
+datasets==2.14.4
+transformers==4.33.1
+sentencepiece==0.1.97
+sacrebleu==2.3.1
+accelerate==0.22.0
+bitsandbytes==0.41.1  # LLaMa 4bit
+scipy==1.11.2
