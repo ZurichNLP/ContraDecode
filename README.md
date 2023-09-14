@@ -36,18 +36,18 @@ Language-contrastive decoding with [Llama 2 Chat (7B)](https://arxiv.org/abs/230
 
 ## Dataset and Models:
 
-This repository automatically downloads and uses [Flores-101](https://huggingface.co/datasets/gsarti/flores_101) for evaluation.
+This repository automatically downloads and uses [FLORES-101](https://huggingface.co/datasets/gsarti/flores_101) for evaluation. ```devtest``` section is used for the evaluation.
 
 Multiple models are implemented:
 
 - [M2M-100 (418M)](https://huggingface.co/facebook/m2m100_418M). Use `--model_path m2m100_418M`
 - [SMaLL-100](https://huggingface.co/alirezamsh/small100). Use `--model_path small100`
-- [Llama 2](https://huggingface.co/meta-llama). Use `--model_path llama-2-7b-chat` or `llama-2-13b-chat`
+- [Llama 2 7B Chat](https://huggingface.co/meta-llama). Use `--model_path llama-2-7b-chat` or `llama-2-13b-chat`
 
 
 ## Evaluation
 
-chrF2:
+ChrF2:
 ```
 sacrebleu ref.txt < output.txt --metrics chrf
 ```
