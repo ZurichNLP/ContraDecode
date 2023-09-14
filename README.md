@@ -1,6 +1,7 @@
 # Contrastive Decoding
 
 [![made-with-python](https://img.shields.io/badge/Made%20with-Python-red.svg)](#python)
+[![arxiv](https://img.shields.io/badge/arXiv-2309.07098-b31b1b.svg)](https://arxiv.org/abs/2309.07098)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) 
 
 <p align="center">
