@@ -50,15 +50,16 @@ class MTTask:
             src_weights = [1]
             tgt_langs=[self.tgt_lang]
             src_langs=[self.src_lang]
-            
+
             # randomly shuffled input to suppress hallucinations
-            for i in range(source_contrastive):
-                shuffled_sentences = copy.copy(source_sentences)
-                random.shuffle(shuffled_sentences)
-                multi_source_sentences.append(shuffled_sentences)
-                src_weights.append(source_weight/source_contrastive)
-                tgt_langs.append(self.tgt_lang)
-                src_langs.append(self.src_lang)
+            if source_contrastive:
+                for i in range(source_contrastive):
+                    shuffled_sentences = copy.copy(source_sentences)
+                    random.shuffle(shuffled_sentences)
+                    multi_source_sentences.append(shuffled_sentences)
+                    src_weights.append(source_weight/source_contrastive)
+                    tgt_langs.append(self.tgt_lang)
+                    src_langs.append(self.src_lang)
 
             # input with wrong target language indicator to suppress off-target translation
             if language_contrastive:

@@ -26,7 +26,7 @@ def main(args):
         print(f"Task added {lang_pair[0]} - {lang_pair[1]}")
 
     for task in tasks:
-        if args.source_contrastive:
+        if args.source_contrastive or args.language_contrastive:
             print(f"Evaluating {task} multi_source")
             out_path = task.evaluate(model.translate_multi_source, 'contrastive', args.source_contrastive, args.source_weight, args.language_contrastive, args.language_weight)
             print(f"Translations saved in {out_path}")
