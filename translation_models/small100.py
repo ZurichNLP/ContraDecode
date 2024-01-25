@@ -3,7 +3,6 @@ import torch
 from tqdm import tqdm
 from transformers import LogitsProcessorList, LogitsProcessor
 from transformers.file_utils import PaddingStrategy
-from transformers.generation_utils import BeamSearchEncoderDecoderOutput
 from translation_models import TranslationModel
 from translation_models.utils import batch
 import torch.nn.functional as F
@@ -68,7 +67,7 @@ class SMaLL100Model(TranslationModel):
             inputs = self.tokenizer._batch_encode_plus(src_sentences, return_tensors="pt",
                                                        padding_strategy=padding_strategy)
             inputs = inputs.to(self.model.device)
-            model_output: BeamSearchEncoderDecoderOutput = self.model.generate(
+            model_output = self.model.generate(
                 **inputs,
                 num_beams=num_beams,
                 return_dict_in_generate=True,
@@ -103,7 +102,7 @@ class SMaLL100Model(TranslationModel):
             inputs["input_ids"][i][0] = self.tokenizer.get_lang_id(tgt_langs[i])
         inputs = inputs.to(self.model.device)
         logits_processor = LogitsProcessorList([EnsembleLogitsProcessor(num_beams=num_beams, source_weights=src_weights)])
-        model_output: BeamSearchEncoderDecoderOutput = self.model.generate(
+        model_output = self.model.generate(
             **inputs,
             num_beams=num_beams,
             return_dict_in_generate=True,
