@@ -8,7 +8,7 @@
   <img src="logo.png" width="500"/>
 </p>
 
-This repository implements source-contrastive and language-contrastive decoding, as described in [Sennrich et al. (2023)](https://arxiv.org/abs/2309.07098).
+This repository implements source-contrastive and language-contrastive decoding, as described in [Sennrich et al. (EACL 2024)](https://arxiv.org/abs/2309.07098).
 
 - In **source-contrastive decoding**, we search for a translation that maximizes P(_Y_|_X_) - λ·P(_Y_|_X'_), where _X'_ is a random source segment. This penalizes hallucinations.
 
@@ -63,10 +63,10 @@ sacrebleu ref.txt < output.txt --tokenize flores101
 ## Reference
 
 ```bibtex
-@article{sennrich-et-al-2023-mitigating,
+@inproceedings{sennrich-etal-2024-mitigating,
       title={Mitigating Hallucinations and Off-target Machine Translation with Source-Contrastive and Language-Contrastive Decoding}, 
       author={Rico Sennrich and Jannis Vamvas and Alireza Mohammadshahi},
-      journal={arXiv preprint arXiv:2309.07098},
-      year={2023}
+      booktitle={18th Conference of the European Chapter of the Association for Computational Linguistics},
+      year={2024}
 }
 ```
