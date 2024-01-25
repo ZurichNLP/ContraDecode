@@ -28,6 +28,7 @@ class LLaMaTranslationModel(TranslationModel):
                  model_name_or_path: str,
                  message_template: str = TEMPLATE_0,
                  one_shot: bool = False,
+                 padding: str = "before_system_prompt",
                  **kwargs,
                  ):
         super().__init__()
@@ -38,6 +39,8 @@ class LLaMaTranslationModel(TranslationModel):
         self.pipeline = pipeline('text-generation', model=self.model, tokenizer=self.tokenizer)
         self.message_template = message_template
         self.one_shot = one_shot
+        assert padding in ["before_system_prompt", "after_system_prompt"]
+        self.padding = padding
         self.src_lang = None
         self.tgt_lang = None
 
@@ -158,7 +161,7 @@ class LLaMaTranslationModel(TranslationModel):
                 tgt_lang=self._lang_code_to_name(tgt_lang),
             )
             if self.one_shot:
-                system_prompt += "\n\nExample instruction:\n{instruction}\n\nExample response:\n{response}".format(
+                system_prompt += "\n\nExample instruction:\n{instruction}\n\nExample response:\nSure, here's the translation:\n{response}".format(
                     instruction=self.message_template.format(
                         src_lang=self._lang_code_to_name(src_lang),
                         tgt_lang=self._lang_code_to_name(tgt_lang),
@@ -181,11 +184,23 @@ class LLaMaTranslationModel(TranslationModel):
         inputs = [self.pipeline.preprocess(prompt) for prompt in prompts]
         input_ids = [x['input_ids'][0].tolist() for x in inputs]
         attention_mask = [x['attention_mask'][0].tolist() for x in inputs]
-        # Add left padding
-        max_len = max(len(x) for x in input_ids)
+
         pad_token_id = self.tokenizer.get_vocab()["▁"]
-        input_ids = [[pad_token_id] * (max_len - len(x)) + x for x in input_ids]
-        attention_mask = [[0] * (max_len - len(x)) + x for x in attention_mask]
+        max_len = max(len(x) for x in input_ids)
+        if self.padding == "before_system_prompt":
+            input_ids = [[pad_token_id] * (max_len - len(x)) + x for x in input_ids]
+            attention_mask = [[0] * (max_len - len(x)) + x for x in attention_mask]
+        elif self.padding == "after_system_prompt":
+            sys_end_id = self.tokenizer.get_vocab()[">>"]
+            for i in range(len(input_ids)):
+                second_inst_idx = input_ids[i].index(sys_end_id, 1)
+                input_ids[i] = (input_ids[i][:second_inst_idx + 1] +
+                                [pad_token_id] * (max_len - len(input_ids[i])) +
+                                input_ids[i][second_inst_idx + 1:])
+                attention_mask[i] = (attention_mask[i][:second_inst_idx + 1] +
+                                     [0] * (max_len - len(attention_mask[i])) +
+                                     attention_mask[i][second_inst_idx + 1:])
+
         input_ids = torch.tensor(input_ids).to(self.model.device)
         attention_mask = torch.tensor(attention_mask).to(self.model.device)
         logits_processor = LogitsProcessorList([
@@ -230,12 +245,15 @@ class PromptTemplate:
     """
     Manages the conversation with a LLaMa chat model.
 
-    Source: https://github.com/samrawal/llama2_chat_templater
+    Adapted from https://github.com/samrawal/llama2_chat_templater
     (c) Sam Rawal
+
+    Adapted to be more similar to https://huggingface.co/blog/llama2#how-to-prompt-llama-2
     """
 
-    def __init__(self, system_prompt=None):
+    def __init__(self, system_prompt=None, add_initial_inst=True):
         self.system_prompt = system_prompt
+        self.add_initial_inst = add_initial_inst
         self.user_messages = []
         self.model_replies = []
 
@@ -280,6 +298,12 @@ class PromptTemplate:
                 conversation_ = "[INST] " + conversation_
             CONVO += conversation_
 
-        CONVO += f"[INST] {self.user_messages[-1]} [/INST]"
+        if self.add_initial_inst:
+            CONVO += f"[INST] {self.user_messages[-1]} [/INST]"
+        else:
+            if len(self.user_messages) <= 1:
+                CONVO += f" {self.user_messages[-1]} [/INST]"
+            else:
+                raise NotImplementedError
 
         return SYS + CONVO

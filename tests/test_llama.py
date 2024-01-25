@@ -2,10 +2,44 @@ import logging
 from unittest import TestCase
 
 from translation_models import load_translation_model
-from translation_models.llama import LLaMaTranslationModel
+from translation_models.llama import LLaMaTranslationModel, PromptTemplate
 
 
 # logging.basicConfig(level=logging.INFO)
+
+
+class PromptTemplateTestCase(TestCase):
+
+    def setUp(self) -> None:
+        self.template = PromptTemplate(system_prompt="You are an assistant.")
+        self.template.add_user_message("Hello, how are you?")
+
+    def test_build_prompt(self):
+        prompt = self.template.build_prompt()
+        print(prompt)
+        self.assertEqual(prompt, """\
+<s>[INST] <<SYS>>
+You are an assistant.
+<</SYS>> Hello, how are you? [/INST]""")
+
+    def test_build_prompt__initial_inst(self):
+        self.template.add_initial_inst = True
+        prompt = self.template.build_prompt()
+        print(prompt)
+        self.assertEqual(prompt, """\
+<s>[INST] <<SYS>>
+You are an assistant.
+<</SYS>>[INST] Hello, how are you? [/INST]""")
+
+    def test_get_user_messages(self):
+        self.template.add_model_reply("I am fine, thank you.", includes_history=False)
+        user_messages = self.template.get_user_messages()
+        self.assertEqual(user_messages, ["Hello, how are you?"])
+
+    def test_get_model_replies(self):
+        self.template.add_model_reply("I am fine, thank you.", includes_history=False)
+        model_replies = self.template.get_model_replies()
+        self.assertEqual(model_replies, ["I am fine, thank you."])
 
 
 class LLaMaTranslationModelTestCase(TestCase):
